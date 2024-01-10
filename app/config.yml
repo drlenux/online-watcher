@@ -1,0 +1,5 @@
+server:
+  passwd: root
+  cors:
+    - http://localhost
+    - http://localhost:8000
