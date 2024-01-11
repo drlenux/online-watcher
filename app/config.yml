@@ -1,5 +1,10 @@
 server:
-  passwd: root
+  life_time: 60
   cors:
     - http://localhost
     - http://localhost:8000
+  access:
+    - login: root
+      password: toor
+    - login: test
+      password: test

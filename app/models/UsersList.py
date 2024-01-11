@@ -1,11 +1,14 @@
 import time
 import threading
-from models.User import User
+from typing import Dict
+
+from app.models.User import User
+
 
 class UsersList:
     def __init__(self, save_time: int = 5):
         self.cleanup_thread = None
-        self.list = {}
+        self.list: Dict[str, User] = {}
         self.save_time = save_time
         self.running = True
         self.lock = threading.Lock()
@@ -14,9 +17,10 @@ class UsersList:
         now = time.time()
         with self.lock:
             if uuid not in self.list:
-                self.list[uuid] = User(id=uuid, last_visit=int(now))
+                self.list[uuid] = User(id=uuid, last_visit=int(now), hit=1)
             else:
                 self.list[uuid].last_visit = int(now)
+                self.list[uuid].hit += 1
 
     def cleanup(self):
         while self.running:
@@ -32,6 +36,14 @@ class UsersList:
         with self.lock:
             return len(self.list)
 
+    def count_hits(self) -> int:
+        res = 0
+        with self.lock:
+            for _, user in self.list.items():
+                res += user.hit
+
+        return res
+
     def start_cleanup(self):
         self.cleanup_thread = threading.Thread(target=self.cleanup)
         self.cleanup_thread.start()
@@ -39,4 +51,3 @@ class UsersList:
     def stop_cleanup(self):
         self.running = False
         self.cleanup_thread.join()
-
