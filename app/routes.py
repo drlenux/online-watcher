@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import uuid4
 
 from app.get_user_access import get_user_access
-from app.models.PingResponse import PingResponse
 from app.models.UsersList import UsersList
 from fastapi.security import HTTPBasic
 from fastapi import Depends, HTTPException
@@ -16,7 +15,6 @@ security = HTTPBasic()
 
 
 def include_router(app: FastAPI, config, users: UsersList):
-
     def validate_credentials(
             credentials: Annotated[HTTPBasicCredentials, Depends(security)],
     ) -> bool:
@@ -42,14 +40,14 @@ def include_router(app: FastAPI, config, users: UsersList):
         return "Hola"
 
     @app.get("/ping")
-    async def ping(res: Response, token: Optional[str] = Cookie(default=None)) -> PingResponse:
+    async def ping(res: Response, token: Optional[str] = Cookie(default=None)) -> int:
         if not token:
             token = str(uuid4())
             res.set_cookie(key='token', value=token)
 
         users.add(token)
 
-        return PingResponse(status=200, token=token)
+        return 200
 
     @app.get("/count/user")
     async def count(isAllow: Annotated[bool, Depends(validate_credentials)]) -> int:
@@ -57,6 +55,6 @@ def include_router(app: FastAPI, config, users: UsersList):
             return users.count()
 
     @app.get('/count/hits')
-    async def countHits(isAllow: Annotated[bool, Depends(validate_credentials)]) -> int:
+    async def count_hits(isAllow: Annotated[bool, Depends(validate_credentials)]) -> int:
         if isAllow:
             return users.count_hits()
